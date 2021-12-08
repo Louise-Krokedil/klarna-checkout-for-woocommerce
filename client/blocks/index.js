@@ -27,7 +27,7 @@ const {
 	getKlarnaOrderNonce,
 } = getKCOServerData();
 
-let callbackFlag = null;
+let callbackFunction = null;
 
 const renderCheckoutSnippet = () => {
 	const checkoutContainer = document.querySelector( '#kco-iframe' );
@@ -55,12 +55,10 @@ const placeKlarnaOrder = ( callback ) => {
 				'.components-button.wc-block-components-button.wc-block-components-checkout-place-order-button'
 			);
 
-			callbackFlag = callback;
+			callbackFunction = callback;
 
 			//submit the form
 			btn.click();
-
-			callback( { should_proceed: true } );
 		}
 	} );
 };
@@ -117,12 +115,12 @@ const PaymentMethod = ( props ) => {
 						paymentDetails,
 						paymentStatus,
 					} = processingResponse;
-					callbackFlag( { should_proceed: true } );
+					callbackFunction( { should_proceed: true } );
 				}
 			);
 			setIsSetOnCheckoutSuccess( true );
 		}
-	}, [ isSetOnCheckoutSuccess, callbackFlag ] );
+	}, [ isSetOnCheckoutSuccess, callbackFunction ] );
 	if ( typeof window._klarnaCheckout === 'function' ) {
 		window._klarnaCheckout( function ( api ) {
 			api.on( {

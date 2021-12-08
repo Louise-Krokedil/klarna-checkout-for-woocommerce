@@ -121,20 +121,12 @@ final class WC_KCO_Blocks_Support extends AbstractPaymentMethodType {
 	 */
 	public function add_payment_request_order_meta( PaymentContext $context, PaymentResult &$result ) {
 		if ( 'kco' === $context->payment_method ) {
+			$gateway = new KCO_Gateway();
+			$gateway->process_payment( $context->order->id );
 			$payment_details                 = $result->payment_details;
-			$payment_details['redirect_url'] = add_query_arg(
-				array(
-					'kco_confirm'  => 'yes',
-					'kco_order_id' => '{checkout.order.id}',
-				),
-				$context->order->get_checkout_order_received_url()
-			);
+			$payment_details['redirect_url'] = $gateway->get_return_url( $context->order );
 			$result->set_payment_details( $payment_details );
 			$result->set_status( 'success' );
 		}
-
 	}
-
-
-
 }
