@@ -50,6 +50,14 @@ class KCO_API {
 	 * @return mixed
 	 */
 	public function update_klarna_order( $klarna_order_id, $order_id = null, $force = false ) {
+		// Dont do this if we are doing a AJAX call and the ajax action is checkout.
+		if ( is_ajax() ) {
+			$action = filter_input( INPUT_GET, 'wc-ajax', FILTER_SANITIZE_STRING );
+			if ( 'checkout' === $action ) {
+				return;
+			}
+		}
+
 		$request  = new KCO_Request_Update();
 		$response = $request->request( $klarna_order_id, $order_id, $force );
 
