@@ -52,15 +52,17 @@ class KCO_Confirmation {
 		$klarna_order_id = filter_input( INPUT_GET, 'kco_order_id', FILTER_SANITIZE_STRING );
 		$order_key       = filter_input( INPUT_GET, 'key', FILTER_SANITIZE_STRING );
 
-		// Return if we dont have our parameters set.
-		if ( empty( $kco_confirm ) || empty( $klarna_order_id ) || empty( $order_key ) ) {
+		// Return if we dont have our required parameters set, since most likely its not our page.
+		if ( empty( $kco_confirm ) || empty( $klarna_order_id ) ) {
 			return;
 		}
 
-		$order_id = wc_get_order_id_by_order_key( $order_key );
+		// If we dont have a Order key from WooCommerce we need to make a slow query for the order.
+		$order_id = empty( $order_key ) ? $this->query_wc_order_id( $klarna_order_id ) : wc_get_order_id_by_order_key( $order_key );
 
 		// Return if we cant find an order id.
 		if ( empty( $order_id ) ) {
+			KCO_Logger::log( "$klarna_order_id: Could not locate a WooCommerce Order id for the Klarna order id." );
 			return;
 		}
 
@@ -68,6 +70,13 @@ class KCO_Confirmation {
 		KCO_Logger::log( $klarna_order_id . ': Confirm the klarna order from the confirmation page.' );
 		kco_confirm_klarna_order( $order_id, $klarna_order_id );
 		kco_unset_sessions();
+
+		if ( empty( $order_key ) ) {
+			// Redirect the customer to the thankyou page for the order if we are not already on the thankyou page.
+			$order = wc_get_order( $order_id );
+			header( 'Location:' . $order->get_checkout_order_received_url() );
+			exit;
+		}
 	}
 
 	/**
@@ -94,28 +103,13 @@ class KCO_Confirmation {
 	 */
 	public function run_kepm( $epm, $order_id, $klarna_order_id ) {
 		$order = wc_get_order( $order_id );
+
 		// Check if we have a KCO order id.
 		if ( ! empty( $klarna_order_id ) && ! $order ) {
-			// Do a database lookup for the WooCommerce order.
-			$query_args = array(
-				'fields'      => 'ids',
-				'post_type'   => wc_get_order_types(),
-				'post_status' => array_keys( wc_get_order_statuses() ),
-				'meta_key'    => '_wc_klarna_order_id', // phpcs:ignore WordPress.DB.SlowDBQuery -- Slow DB Query is ok here, we need to limit to our meta key.
-				'meta_value'  => $klarna_order_id, // phpcs:ignore WordPress.DB.SlowDBQuery -- Slow DB Query is ok here, we need to limit to our meta key.
-				'date_query'  => array(
-					array(
-						'after' => '2 day ago',
-					),
-				),
-			);
-			$orders     = get_posts( $query_args );
-			// Set the order from the first order id returned.
-			if ( ! empty( $orders ) ) {
-				$order_id = $orders[0];
-				$order    = wc_get_order( $order_id );
-			}
+			$order_id = self::query_wc_order_id( $klarna_order_id );
+			$order    = wc_get_order( $order_id );
 		}
+
 		// Check if we have a order.
 		if ( ! $order ) {
 			wc_print_notice( __( 'Failed getting the order for the external payment.', 'klarna-checkout-for-woocommerce' ), 'error' );
@@ -139,6 +133,34 @@ class KCO_Confirmation {
 		}
 		wp_redirect( $result['redirect'] ); // phpcs:ignore
 		exit;
+	}
+
+	/**
+	 * Undocumented function
+	 *
+	 * @param string $klarna_order_id The Klarna Order ID.
+	 * @return int|bool
+	 */
+	public static function query_wc_order_id( $klarna_order_id ) {
+		// Do a database lookup for the WooCommerce order.
+		$query_args = array(
+			'fields'      => 'ids',
+			'post_type'   => wc_get_order_types(),
+			'post_status' => array_keys( wc_get_order_statuses() ),
+			'meta_key'    => '_wc_klarna_order_id', // phpcs:ignore WordPress.DB.SlowDBQuery -- Slow DB Query is ok here, we need to limit to our meta key.
+			'meta_value'  => $klarna_order_id, // phpcs:ignore WordPress.DB.SlowDBQuery -- Slow DB Query is ok here, we need to limit to our meta key.
+			'date_query'  => array(
+				array(
+					'after' => '2 day ago',
+				),
+			),
+		);
+		$order_ids  = get_posts( $query_args );
+		if ( empty( $order_ids ) ) {
+			return false;
+		}
+
+		return $order_ids[0];
 	}
 }
 KCO_Confirmation::get_instance();
