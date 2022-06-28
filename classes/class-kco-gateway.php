@@ -446,9 +446,6 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 				update_post_meta( $order_id, '_shipping_phone', sanitize_text_field( $klarna_order['shipping_address']['phone'] ) );
 				update_post_meta( $order_id, '_shipping_email', sanitize_text_field( $klarna_order['shipping_address']['email'] ) );
 
-				// Update the order with new confirmation page url.
-				$klarna_order = KCO_WC()->api->update_klarna_confirmation( $klarna_order_id, $klarna_order, $order_id );
-
 				$order->save();
 				// Let other plugins hook into this sequence.
 				do_action( 'kco_wc_process_payment', $order_id, $klarna_order );
