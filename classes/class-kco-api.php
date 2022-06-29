@@ -58,6 +58,11 @@ class KCO_API {
 			}
 		}
 
+		// Check if we should ignore due to this being during an order submission.
+		if ( kco_is_order_submission() ) {
+			return;
+		}
+
 		$request  = new KCO_Request_Update();
 		$response = $request->request( $klarna_order_id, $order_id, $force );
 

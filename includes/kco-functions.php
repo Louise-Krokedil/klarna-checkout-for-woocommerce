@@ -720,3 +720,19 @@ function kco_update_wc_shipping( $data, $klarna_order = false ) {
 	$chosen_shipping_methods[] = wc_clean( $data['id'] );
 	WC()->session->set( 'chosen_shipping_methods', apply_filters( 'kco_wc_chosen_shipping_method', $chosen_shipping_methods ) );
 }
+
+
+/**
+ * Checks if we are currently in the processes of submitting an order.
+ *
+ * @return bool
+ */
+function kco_is_order_submission() {
+	if ( isset( $_POST['post_data'] ) ) { // phpcs:ignore
+		parse_str( $_POST['post_data'], $post_data ); // phpcs:ignore
+		if ( isset( $post_data['kco-submit-order'] ) ) { // Check if this is happening during the order submission of KCO.
+			return true;
+		}
+	}
+	return false;
+}

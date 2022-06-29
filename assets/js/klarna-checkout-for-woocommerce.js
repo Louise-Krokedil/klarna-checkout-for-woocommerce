@@ -365,6 +365,7 @@ jQuery( function( $ ) {
 			kco_wc.blocked = false;
 			var className = kco_params.pay_for_order ? 'div.woocommerce-notices-wrapper' : 'form.checkout';
 			// Renable the form.
+			$('#kco-submit-order').remove();
 			$( 'body' ).trigger( 'updated_checkout' );
 			$( kco_wc.checkoutFormSelector ).removeClass( 'processing' );
 			$( kco_wc.checkoutFormSelector ).unblock();
@@ -423,6 +424,7 @@ jQuery( function( $ ) {
   		placeKlarnaOrder: function(callback) {
 			kco_wc.blocked = true;
 			kco_wc.checkoutFormSelector.addClass( 'processing' ); // Add class to prevent form from triggering a update.
+			kco_wc.checkoutFormSelector.append('<input type="hidden" id="kco-submit-order" name="kco-submit-order" value="yes" />');
 			kco_wc.getKlarnaOrder().done( function(response) {
 				if(response.success ) {
 					$( '.woocommerce-checkout-review-order-table' ).block({
