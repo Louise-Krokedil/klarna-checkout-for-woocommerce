@@ -420,8 +420,9 @@ jQuery( function( $ ) {
 			return Object.keys(kco_params.countries).find(key => kco_params.countries[key] === country);
 		},
 
-  placeKlarnaOrder: function(callback) {
+  		placeKlarnaOrder: function(callback) {
 			kco_wc.blocked = true;
+			kco_wc.checkoutFormSelector.addClass( 'processing' ); // Add class to prevent form from triggering a update.
 			kco_wc.getKlarnaOrder().done( function(response) {
 				if(response.success ) {
 					$( '.woocommerce-checkout-review-order-table' ).block({
