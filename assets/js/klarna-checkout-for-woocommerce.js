@@ -16,7 +16,7 @@ jQuery( function( $ ) {
 
 		// Form fields.
 		shippingUpdated: false,
-		blocked: false,
+		validation: false,
 
 		preventPaymentMethodChange: false,
 
@@ -45,7 +45,7 @@ jQuery( function( $ ) {
 		 * @param {boolean} autoResumeBool 
 		 */
 		kcoSuspend: function( autoResumeBool ) {
-			if ( window._klarnaCheckout ) {
+			if ( window._klarnaCheckout && ! kco_wc.validation ) {
 				window._klarnaCheckout( function( api ) {
 					api.suspend({
 						autoResume: {
@@ -60,11 +60,9 @@ jQuery( function( $ ) {
 		 * Resumes the KCO Iframe
 		 */
 		kcoResume: function() {
-			if ( window._klarnaCheckout ) {
+			if ( window._klarnaCheckout && ! kco_wc.validation) {
 				window._klarnaCheckout( function( api ) {
-					if ( false === kco_wc.blocked ) {
-						api.resume();
-					}
+					api.resume();
 				});
 			}
 		},
@@ -331,7 +329,7 @@ jQuery( function( $ ) {
 		 */
 		failOrder: function( event, error_message, callback ) {
 			callback({ should_proceed: false });
-			kco_wc.blocked = false;
+			kco_wc.validation = false;
 			// Renable the form.
 			$( 'body' ).trigger( 'updated_checkout' );
 			$( kco_wc.checkoutFormSelector ).removeClass( 'processing' );
@@ -389,7 +387,6 @@ jQuery( function( $ ) {
 		},
 
 		placeKlarnaOrder: function(callback) {
-			kco_wc.blocked = true;
 			kco_wc.getKlarnaOrder().done( function(response) {
 				if(response.success) {
 					console.log( 2 );
@@ -408,7 +405,7 @@ jQuery( function( $ ) {
 						success: function( data ) {
 							try {
 								if ( 'success' === data.result ) {
-									kco_wc.logToFile( 'Successfully placed order. Sending "should_procede: true" to Klarna' );
+									kco_wc.logToFile( 'Successfully placed order. Sending "should_proceed: true" to Klarna' );
 									callback({ should_proceed: true });
 								} else {
 									throw 'Result failed';
@@ -432,6 +429,7 @@ jQuery( function( $ ) {
 					console.log( 3 );
 					kco_wc.failOrder( 'get_order', '<div class="woocommerce-error">' + 'Failed to get the order from Klarna.' + '</div>', callback );
 				}
+				kco_wc.validation = false;
 			});
 		},
 
@@ -491,7 +489,8 @@ jQuery( function( $ ) {
 						'can_not_complete_order': function( data ) {
 							kco_wc.log( 'can_not_complete_order', data );
 						},
-						'validation_callback': function( data, callback ) {
+						'validation_callback': function (data, callback) {
+							kco_wc.validation = true;
 							kco_wc.logToFile( 'validation_callback from Klarna triggered' );
 							kco_wc.placeKlarnaOrder(callback);
 						}
