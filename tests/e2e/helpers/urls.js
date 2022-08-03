@@ -31,6 +31,9 @@ const API_SESSION_ENDPOINT = "/wc/v3/system_status/tools/clear_sessions";
 
 const API_WC_OPTIONS = "/wc-admin/options";
 
+//---------
+const API_SHIPPING_METHOD_CREATE = "/wc/v3/shipping/zones/1/methods";
+
 export default {
 	BASE_URL,
 	CHECKOUT,
@@ -47,5 +50,7 @@ export default {
 	API_SESSION_ENDPOINT,
 	API_WC_OPTIONS,
 	API_WC_PRICE_INC_EXC,
-	ORDER
+	ORDER,
+
+	API_SHIPPING_METHOD_CREATE,
 };

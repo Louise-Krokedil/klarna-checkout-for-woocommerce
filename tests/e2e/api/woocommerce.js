@@ -11,6 +11,8 @@ const {
 	API_SESSION_ENDPOINT,
 	API_WC_OPTIONS,
 	API_WC_PRICE_INC_EXC,
+
+	API_SHIPPING_METHOD_CREATE,
 } = urls;
 
 const getProducts = () => {
@@ -105,6 +107,12 @@ const pricesIncludeTax = async (data) => {
 	return createRequest(API_WC_PRICE_INC_EXC, put, data);
 };
 
+//------------------
+const createShippingMethod = (data) => {
+	return createRequest(`${API_SHIPPING_METHOD_CREATE}`, post, data)
+}
+//----------------
+
 export default {
 	getProducts,
 	getProductById,
@@ -125,4 +133,6 @@ export default {
 	includeShippingZoneMethod,
 	updateShippingZoneMethod,
 	pricesIncludeTax,
+
+	createShippingMethod,
 };

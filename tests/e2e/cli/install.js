@@ -2,7 +2,7 @@ require("dotenv").config();
 const waitOn = require("wait-on");
 const { execSync } = require("child_process");
 
-const { SITEHOST, PORT, PLUGIN_NAME, KOM } = process.env;
+const { SITEHOST, PORT, PLUGIN_NAME, KOM, KSA } = process.env;
 
 const executeCommand = (command) => {
 	const dockerRunCLI = "docker-compose run --rm wordpress-cli";
@@ -13,9 +13,17 @@ const executeCommand = (command) => {
 
 const installKom = () => {
 	if (KOM === 'yes') {
+
 		executeCommand(`wp plugin install klarna-order-management-for-woocommerce --activate`);
 	}
 };
+
+const installKsa = () => {
+	if ( KSA === 'yes' ) {
+
+		executeCommand(`wp plugin install https://kernl.us/api/v1/updates/5d55892b8e5ece2071af8e83/download/`);
+	}
+}
 
 const wpInstallCommand = (params) => {
 	const { title, admin, pass, email, url } = params;
@@ -60,6 +68,8 @@ waitOn({
 		activateKCO();
 		importDb();
 		installKom();
+		installKsa();
+
 	} catch (error) {
 		console.log(error);
 	}

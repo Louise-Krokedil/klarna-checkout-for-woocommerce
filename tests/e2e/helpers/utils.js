@@ -1,5 +1,8 @@
 import API from "../api/API";
 import urls from "./urls";
+//-----------------
+const { execSync } = require("child_process");
+//-----------------
 
 const timeOutTime = 2500;
 const KCOSettingsArray = {
@@ -44,6 +47,16 @@ const KCOSettingsArray = {
 		add_to_email: "no",
 	},
 };
+
+//---------------
+// Data for new shipping methods.
+let shippingMethodData = {
+	method_id: "klarna_kss",
+	settings: {
+		title: "KLARNA KSA",
+	}
+}
+//---------------
 
 const login = async (page, username, password) => {
 	await page.type("#username", username);
@@ -124,6 +137,19 @@ const selectKco = async (page) => {
 	}
 }
 
+//------------ 
+const executeCommand = (command) => {
+	const dockerRunCLI = "docker-compose run --rm wordpress-cli";
+	execSync(`${dockerRunCLI} ${command}`, {
+		stdio: "inherit",
+	});
+};
+
+const addShippingMethod = async () => {
+	await API.createShippingMethod(shippingMethodData);
+}
+//------------
+
 export default {
 	login,
 	applyCoupons,
@@ -132,4 +158,6 @@ export default {
 	setPricesIncludesTax,
 	setIframeShipping,
 	selectKco,
+	executeCommand,
+	addShippingMethod,
 };

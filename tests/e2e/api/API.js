@@ -31,6 +31,10 @@ const getWCOrders = async () => woocommerce.getOrders();
 const getWCProductById = async (id) => woocommerce.getProductById(id);
 const pricesIncludeTax = async (data) => woocommerce.pricesIncludeTax(data);
 
+
+//------
+const createShippingMethod = async(data) => woocommerce.createShippingMethod(data)
+
 export default {
 	getKlarnaOrderById,
 	getWCOrderById,
@@ -42,4 +46,6 @@ export default {
 	getWCOrders,
 	getWCProductById,
 	pricesIncludeTax,
+
+	createShippingMethod,
 };

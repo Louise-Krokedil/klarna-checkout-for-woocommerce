@@ -31,6 +31,8 @@ describe("KCO E2E tests", () => {
 		try {
 			json = await setup.setupStore(json);
 
+			//---------------------------------------------
+
 		} catch (e) {
 			console.log(e);
 		}
@@ -40,6 +42,7 @@ describe("KCO E2E tests", () => {
 		browser = await puppeteer.launch(options);
 		context = await browser.createIncognitoBrowserContext();
 		page = await context.newPage();
+
 	}),
 
 		afterEach(async () => {
@@ -58,6 +61,18 @@ describe("KCO E2E tests", () => {
 						await page.goto(urls.MY_ACCOUNT);
 						await utils.login(page, "admin", "password");
 					}
+
+					// ---------------- ADD KSA ------------------- //
+
+					await utils.executeCommand(`wp plugin activate klarna-shipping-service-for-woocommerce`);
+
+					await page.waitForTimeout(1000);
+
+					await utils.addShippingMethod();
+
+					await page.waitForTimeout(1000);
+
+
 
 					// --------------- SETTINGS --------------- //
 					await utils.setPricesIncludesTax({ value: args.inclusiveTax });
