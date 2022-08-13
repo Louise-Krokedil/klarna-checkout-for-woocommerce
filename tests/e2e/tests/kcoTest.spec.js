@@ -7,6 +7,8 @@ import iframeHandler from "../helpers/iframeHandler";
 import tests from "../config/tests.json"
 import data from "../config/data.json";
 import orderManagement from "../helpers/orderManagement";
+import ksaHandler from "../helpers/ksaHandler";
+import woocommerce from "../api/woocommerce";
 
 const options = {
 	"headless": false,
@@ -30,9 +32,6 @@ describe("KCO E2E tests", () => {
 	beforeAll(async () => {
 		try {
 			json = await setup.setupStore(json);
-
-			//---------------------------------------------
-
 		} catch (e) {
 			console.log(e);
 		}
@@ -42,14 +41,13 @@ describe("KCO E2E tests", () => {
 		browser = await puppeteer.launch(options);
 		context = await browser.createIncognitoBrowserContext();
 		page = await context.newPage();
-
 	}),
 
 		afterEach(async () => {
 			if (!page.isClosed()) {
 				browser.close();
 			}
-			API.clearWCSession();
+			await API.clearWCSession();
 		}),
 
 		test.each(tests)(
@@ -57,22 +55,16 @@ describe("KCO E2E tests", () => {
 			async (args) => {
 				try {
 					// --------------- GUEST/LOGGED IN --------------- //
+					await utils.setCredentials(args.klarnaShippingAssistant);
+					await page.waitForTimeout(1000);
+
 					if (args.loggedIn) {
 						await page.goto(urls.MY_ACCOUNT);
 						await utils.login(page, "admin", "password");
 					}
 
-					// ---------------- ADD KSA ------------------- //
-
-					await utils.executeCommand(`wp plugin activate klarna-shipping-service-for-woocommerce`);
-
-					await page.waitForTimeout(1000);
-
-					await utils.addShippingMethod();
-
-					await page.waitForTimeout(1000);
-
-
+					await ksaHandler.setShippingMethods(page, args.klarnaShippingAssistant)
+					await ksaHandler.setShippingTaxClass(page, args.klarnaShippingAssistant)
 
 					// --------------- SETTINGS --------------- //
 					await utils.setPricesIncludesTax({ value: args.inclusiveTax });
@@ -101,13 +93,12 @@ describe("KCO E2E tests", () => {
 					await iframeHandler.processKcoForm(page, kcoIframe, args.customerType);
 
 					// --------------- SHIPPING HANDLER --------------- //
-					await iframeHandler.processShipping(page, kcoIframe, args.shippingMethod, args.shippingInIframe)
+					await iframeHandler.processShipping(page, kcoIframe, args.shippingMethod, args.shippingInIframe, args.klarnaShippingAssistant)
 
 					// --------------- COMPLETE ORDER --------------- //
 					await iframeHandler.completeOrder(page, kcoIframe);
 
-
-					await page.waitForTimeout(2 * timeOutTime);
+					await page.waitForTimeout(1 * timeOutTime);
 
 
 				} catch (e) {
@@ -127,15 +118,13 @@ describe("KCO E2E tests", () => {
 				const thankyouIframe = await page.frames().find((frame) => frame.name() === "klarna-checkout-iframe");
 				await thankyouIframe.click("[id='section-order-details__link']");
 				await page.waitForTimeout(1 * timeOutTime);
+
 				const kcoOrderData = await iframeHandler.getOrderData(thankyouIframe);
 				expect(kcoOrderData[0]).toBe(args.expectedOrderLines);
 				expect(kcoOrderData[1]).toBe(args.expectedTotal);
 
-
-				if(args.orderManagement != '') {
-
+				if (args.orderManagement != '') {
 					await orderManagement.OrderManagementAction(page, orderID, args.orderManagement)
-
 				}
 
 			}, 240000);

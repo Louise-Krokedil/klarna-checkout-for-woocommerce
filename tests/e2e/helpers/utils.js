@@ -1,10 +1,8 @@
 import API from "../api/API";
 import urls from "./urls";
-//-----------------
 const { execSync } = require("child_process");
-//-----------------
-
 const timeOutTime = 2500;
+
 const KCOSettingsArray = {
 	woocommerce_kco_settings: {
 		enabled: "yes",
@@ -48,15 +46,42 @@ const KCOSettingsArray = {
 	},
 };
 
-//---------------
+
 // Data for new shipping methods.
-let shippingMethodData = {
+let ksaShippingMethodData = {
 	method_id: "klarna_kss",
 	settings: {
 		title: "KLARNA KSA",
 	}
 }
-//---------------
+
+let flatRateShippingMethodData = {
+	method_id: "flat_rate",
+	settings: {
+		title: "Flat Rate",
+		amount: 49
+	}
+}
+
+let freeShippingMethodData = {
+	method_id: "free_shipping",
+	settings: {
+		title: "Free Shipping",
+		amount: 0
+	}
+}
+
+// KSA standard tax rate data.
+let ksaTaxRateData = {
+		'country' : '*',
+		'state' : '*',
+		'cities' : '*',
+		'postcodes' : '*',
+		'rate' : '25',
+		'name' : '*',
+		'shipping' : true
+	
+}
 
 const login = async (page, username, password) => {
 	await page.type("#username", username);
@@ -137,7 +162,6 @@ const selectKco = async (page) => {
 	}
 }
 
-//------------ 
 const executeCommand = (command) => {
 	const dockerRunCLI = "docker-compose run --rm wordpress-cli";
 	execSync(`${dockerRunCLI} ${command}`, {
@@ -145,10 +169,69 @@ const executeCommand = (command) => {
 	});
 };
 
-const addShippingMethod = async () => {
-	await API.createShippingMethod(shippingMethodData);
+const allShippingmethods = async () => {
+	await API.showShippingMethods()
 }
-//------------
+
+const addShippingMethod = async (methodData) => {
+	switch (methodData) {
+		case 'KSA':
+			await API.createShippingMethod(ksaShippingMethodData);
+			break
+		case 'flat_rate':
+			await API.createShippingMethod(flatRateShippingMethodData);
+			break
+		case 'free_shipping':
+			await API.createShippingMethod(freeShippingMethodData);
+			break
+		default:
+			break
+	}
+}
+
+const deleteShippingMethod = async (data,methodId) => {
+	API.deleteShippingMethodById(data, methodId)
+}
+
+const goToMyShippingmethods = async (page) => {
+    await page.goto(urls.SHIPPING_ZONE_METHODS);
+
+    await page.waitForTimeout(timeOutTime);
+    await updateWPDB(page)
+    await loginToAdmin(page)
+    await page.waitForTimeout(500);
+
+}
+
+const setCredentials = async (toggleSwitch) => {
+	if (toggleSwitch) {
+	KCOSettingsArray.woocommerce_kco_settings.test_merchant_id_eu = process.env.API_KEY_KSA ;
+	KCOSettingsArray.woocommerce_kco_settings.test_shared_secret_eu = process.env.API_SECRET_KSA
+	} else {
+		KCOSettingsArray.woocommerce_kco_settings.test_merchant_id_eu = process.env.API_KEY ;
+		KCOSettingsArray.woocommerce_kco_settings.test_shared_secret_eu = process.env.API_SECRET
+	}
+
+	await API.updateOptions(KCOSettingsArray);
+}
+
+const createKsaTaxRate = async () => {
+	await API.createKsaStandardTaxRate(ksaTaxRateData)
+}
+
+const deleteStandardTaxRates = async () => {
+    let taxRatesList = await API.listTaxRates()
+
+    for (let index = 0; index < taxRatesList.data.length; index++) {
+        if (taxRatesList.data[index].name === '*' && taxRatesList.data[index].class === 'standard') {
+            await API.removeStandardTaxRate({force:true}, taxRatesList.data[index].id)
+        }
+    }
+}
+
+const convertWooTotalAmountToFloat = async (totalString) => {
+	return parseFloat((((totalString.substring(totalString.indexOf('\n') + 1)).split('kr')[0]).replace('.', '')).replace(',', '.')).toFixed(2)
+}
 
 export default {
 	login,
@@ -160,4 +243,11 @@ export default {
 	selectKco,
 	executeCommand,
 	addShippingMethod,
+	setCredentials,
+	createKsaTaxRate,
+	deleteShippingMethod,
+	allShippingmethods,
+	deleteStandardTaxRates,
+	convertWooTotalAmountToFloat,
+    goToMyShippingmethods
 };

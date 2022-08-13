@@ -8,6 +8,8 @@ const SHOP = `${BASE_URL}/shop`;
 
 const ORDER = `${BASE_URL}/wp-admin/edit.php?post_type=shop_order`;
 
+const ADMIN = `${BASE_URL}/wp-admin`;
+
 const ADD_TO_CART = `${BASE_URL}/shop/?add-to-cart=`;
 
 const MY_ACCOUNT = `${BASE_URL}/my-account`;
@@ -31,8 +33,17 @@ const API_SESSION_ENDPOINT = "/wc/v3/system_status/tools/clear_sessions";
 
 const API_WC_OPTIONS = "/wc-admin/options";
 
-//---------
+const API_SHIPPING_METHOD_LIST_ALL = "/wc/v3/shipping/zones/1/methods";
+
 const API_SHIPPING_METHOD_CREATE = "/wc/v3/shipping/zones/1/methods";
+
+const API_SHIPPING_METHODS_REMOVE_METHOD = "/wc/v3/shipping/zones/1/methods"
+
+const API_CREATE_TAX_RATE = "/wc/v3/taxes"
+
+const TAX_SETTINGS = `${BASE_URL}/wp-admin/admin.php?page=wc-settings&tab=tax`
+
+const SHIPPING_ZONE_METHODS = `${BASE_URL}/wp-admin/admin.php?page=wc-settings&tab=shipping&zone_id=1`;
 
 export default {
 	BASE_URL,
@@ -51,6 +62,11 @@ export default {
 	API_WC_OPTIONS,
 	API_WC_PRICE_INC_EXC,
 	ORDER,
-
+	ADMIN,
+	API_SHIPPING_METHOD_LIST_ALL,
 	API_SHIPPING_METHOD_CREATE,
+	API_SHIPPING_METHODS_REMOVE_METHOD,
+	API_CREATE_TAX_RATE,
+	SHIPPING_ZONE_METHODS,
+	TAX_SETTINGS
 };

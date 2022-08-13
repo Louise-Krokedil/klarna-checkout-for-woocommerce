@@ -1,5 +1,5 @@
 import urls from "../helpers/urls";
-import { createRequest, post, put } from "./index";
+import { createRequest, post, put, remove } from "./index";
 
 const {
 	API_ORDER_ENDPOINT,
@@ -12,7 +12,11 @@ const {
 	API_WC_OPTIONS,
 	API_WC_PRICE_INC_EXC,
 
+	API_SHIPPING_METHOD_LIST_ALL,
 	API_SHIPPING_METHOD_CREATE,
+	API_SHIPPING_METHODS_REMOVE_METHOD,
+
+	API_CREATE_TAX_RATE
 } = urls;
 
 const getProducts = () => {
@@ -107,11 +111,28 @@ const pricesIncludeTax = async (data) => {
 	return createRequest(API_WC_PRICE_INC_EXC, put, data);
 };
 
-//------------------
-const createShippingMethod = (data) => {
+const getAllShippingMethods = async () => {
+	return createRequest(`${API_SHIPPING_METHOD_LIST_ALL}`)
+}
+
+const createShippingMethod = async (data) => {
 	return createRequest(`${API_SHIPPING_METHOD_CREATE}`, post, data)
 }
-//----------------
+
+const deleteShippingMethodById = async (data, methodId) => {
+	return createRequest(`${API_SHIPPING_METHODS_REMOVE_METHOD}/${methodId}`,remove, data)
+}
+const listaAllTaxRates = async () => {
+	return createRequest(`${API_TAXES_ENDPOINT}`)
+}
+
+const ksaCreateStandardTaxRate = async (data) => {
+	return createRequest(`${API_CREATE_TAX_RATE}`, post, data)
+}
+const ksaDeleteStandardTaxRate = async (data, rateId) => {
+		return createRequest(`${API_CREATE_TAX_RATE}/${rateId}`, remove, data)
+}
+
 
 export default {
 	getProducts,
@@ -135,4 +156,9 @@ export default {
 	pricesIncludeTax,
 
 	createShippingMethod,
+	deleteShippingMethodById,
+	ksaCreateStandardTaxRate,
+	ksaDeleteStandardTaxRate,
+	getAllShippingMethods,
+	listaAllTaxRates
 };

@@ -30,10 +30,13 @@ const createWCProduct = async (data) => woocommerce.createProduct(data);
 const getWCOrders = async () => woocommerce.getOrders();
 const getWCProductById = async (id) => woocommerce.getProductById(id);
 const pricesIncludeTax = async (data) => woocommerce.pricesIncludeTax(data);
+const listTaxRates = async() => woocommerce.listaAllTaxRates()
+const createKsaStandardTaxRate = async(data) => woocommerce.ksaCreateStandardTaxRate(data)
+const removeStandardTaxRate = async(data, rateId) => woocommerce.ksaDeleteStandardTaxRate(data, rateId)
 
-
-//------
+const showShippingMethods = async() => woocommerce.getAllShippingMethods()
 const createShippingMethod = async(data) => woocommerce.createShippingMethod(data)
+const deleteShippingMethodById = async (data, id) => woocommerce.deleteShippingMethodById(data, id);
 
 export default {
 	getKlarnaOrderById,
@@ -47,5 +50,10 @@ export default {
 	getWCProductById,
 	pricesIncludeTax,
 
+	showShippingMethods,
 	createShippingMethod,
+	listTaxRates,
+	createKsaStandardTaxRate,
+	deleteShippingMethodById,
+	removeStandardTaxRate
 };
