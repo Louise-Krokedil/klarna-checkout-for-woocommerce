@@ -10,8 +10,9 @@ const httpMethods = {
 	get: "GET",
 	post: "POST",
 	put: "PUT",
+	remove: "DELETE"
 };
-const { get, post, put } = httpMethods;
+const { get, post, put, remove } = httpMethods;
 const oauth = Oauth({
 	consumer: {
 		key: consumerKey,
@@ -51,6 +52,10 @@ const createRequest = async (endpoint, method = "GET", data = null) => {
 		case put:
 			response = axios.put(requestData.url, data, config);
 			break;
+		case remove:
+			config.data = data;
+			response = axios.delete(requestData.url, config);
+			break;
 		default:
 			return Promise.reject(new Error("Unsupported method")).then(
 				(result) => console.log(result)
@@ -59,4 +64,4 @@ const createRequest = async (endpoint, method = "GET", data = null) => {
 	return response;
 };
 
-export { createRequest, get, post, put };
+export { createRequest, get, post, put, remove };
