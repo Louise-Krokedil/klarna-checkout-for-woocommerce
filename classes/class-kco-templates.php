@@ -124,6 +124,16 @@ class KCO_Templates {
 				$order_id           = $wp->query_vars['order-pay'];
 				$order              = wc_get_order( $order_id );
 				$available_gateways = WC()->payment_gateways()->get_available_payment_gateways();
+
+				/* If the order contain any subscription, let WCS handle the checkout instead. This might be necessary if a subscription order is not properly created (e.g., a "normal" order that contain subscription products). */
+				if ( class_exists( 'WC_Subscriptions_Product' ) ) {
+					foreach ( $order->get_items() as $item ) {
+						if ( WC_Subscriptions_Product::is_subscription( $item->get_product_id() ) ) {
+							return $template;
+						}
+					}
+				}
+
 				if ( array_key_exists( 'kco', $available_gateways ) ) {
 					if ( locate_template( 'woocommerce/klarna-checkout-pay.php' ) ) {
 						$klarna_checkout_template = locate_template( 'woocommerce/klarna-checkout-pay.php' );
@@ -249,7 +259,6 @@ class KCO_Templates {
 		return $fields;
 	}
 
-
 	/**
 	 * Triggers WC action.
 	 */
@@ -257,12 +266,12 @@ class KCO_Templates {
 		do_action( 'woocommerce_review_order_before_submit' );
 	}
 
-		/**
-		 * Add checkout page body class, depending on checkout page layout settings.
-		 *
-		 * @param array $class CSS classes used in body tag.
-		 * @return array The same input array with the addition of our custom classes.
-		 */
+	/**
+	 * Add checkout page body class, depending on checkout page layout settings.
+	 *
+	 * @param array $class CSS classes used in body tag.
+	 * @return array The same input array with the addition of our custom classes.
+	 */
 	public function add_body_class( $class ) {
 		if ( ! is_checkout() || is_wc_endpoint_url( 'order-received' ) ) {
 			return $class;
