@@ -87,6 +87,15 @@ class KCO_Fields {
 				'default'  => 'two_column_right',
 				'desc_tip' => false,
 			),
+			'checkout_template'          => array(
+				'title'   => __( 'Checkout template', 'klarna-checkout-for-woocommerce' ),
+				'type'    => 'select',
+				'options' => array(
+					'old' => __( 'Old', 'klarna-checkout-for-woocommerce' ),
+					'new' => __( 'New', 'klarna-checkout-for-woocommerce' ),
+				),
+				'default' => 'old',
+			),
 			// EU.
 			'credentials_eu'             => array(
 				'title' => '<img src="' . KCO_WC_PLUGIN_URL . '/assets/img/flags/eu.svg height="12" /> API Credentials Europe',

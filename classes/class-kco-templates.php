@@ -43,6 +43,8 @@ class KCO_Templates {
 		// Template hooks.
 		add_action( 'kco_wc_after_order_review', 'kco_wc_add_extra_checkout_fields', 10 );
 		add_action( 'kco_wc_after_order_review', 'kco_wc_show_another_gateway_button', 20 );
+		add_action( 'woocommerce_checkout_order_review', 'kco_wc_show_another_gateway_button', 20 );
+
 		add_action( 'kco_wc_before_snippet', 'kco_wc_prefill_consent', 10 );
 		add_action( 'kco_wc_before_snippet', array( $this, 'add_wc_form' ), 10 ); // @TODO Look into changing this to kco_wc_after_wrapper later.
 		add_action( 'kco_wc_before_snippet', array( $this, 'add_review_order_before_submit' ), 15 );
@@ -77,10 +79,13 @@ class KCO_Templates {
 			if ( 'checkout/form-checkout.php' === $template_name ) {
 				$available_gateways = WC()->payment_gateways()->get_available_payment_gateways();
 
-				if ( locate_template( 'woocommerce/klarna-checkout.php' ) ) {
-					$klarna_checkout_template = locate_template( 'woocommerce/klarna-checkout.php' );
+				$kco_settings = get_option( 'woocommerce_kco_settings' );
+				$kco_template = ( 'old' === $kco_settings['checkout_template'] ) ? 'old-klarna-checkout.php' : 'klarna-checkout.php';
+
+				if ( locate_template( "woocommerce/{$kco_template}" ) ) {
+					$klarna_checkout_template = locate_template( "woocommerce/{$kco_template}" );
 				} else {
-					$klarna_checkout_template = apply_filters( 'kco_locate_checkout_template', KCO_WC_PLUGIN_PATH . '/templates/klarna-checkout.php', $template_name );
+					$klarna_checkout_template = apply_filters( 'kco_locate_checkout_template', KCO_WC_PLUGIN_PATH . "/templates/{$kco_template}", $template_name );
 				}
 
 				// Klarna checkout page.
