@@ -158,6 +158,11 @@ class KCO_Checkout {
 			return $default;
 		}
 
+		// If the chosen method is the same as the default, then we don't need to do anything.
+		if ( $chosen_method === $default ) {
+			return $default;
+		}
+
 		KCO_Logger::log( "Checkout error - Shipping methods where changed during the checkout process by WooCommerce. Chosen shipping method by the customer was $chosen_method, WooCommerce wanted to set $default instead" );
 
 		/*
